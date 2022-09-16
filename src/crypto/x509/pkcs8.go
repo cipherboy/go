@@ -42,7 +42,7 @@ func ParsePKCS8PrivateKey(der []byte) (key any, err error) {
 		return nil, err
 	}
 	switch {
-	case privKey.Algo.Algorithm.Equal(oidPublicKeyRSA):
+	case privKey.Algo.Algorithm.Equal(oidPublicKeyRSA), privKey.Algo.Algorithm.Equal(oidPublicKeyRSAOAEP), privKey.Algo.Algorithm.Equal(oidPublicKeyRSAPSS):
 		key, err = ParsePKCS1PrivateKey(privKey.PrivateKey)
 		if err != nil {
 			return nil, errors.New("x509: failed to parse RSA private key embedded in PKCS#8: " + err.Error())
