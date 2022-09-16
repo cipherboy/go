@@ -446,6 +446,8 @@ func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm
 //		iso(1) member-body(2) us(840) ansi-X9-62(10045) keyType(2) 1 }
 var (
 	oidPublicKeyRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	oidPublicKeyRSAOAEP = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 7}
+	oidPublicKeyRSAPSS  = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
 	oidPublicKeyDSA     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
 	oidPublicKeyECDSA   = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
 	oidPublicKeyEd25519 = oidSignatureEd25519
@@ -453,7 +455,7 @@ var (
 
 func getPublicKeyAlgorithmFromOID(oid asn1.ObjectIdentifier) PublicKeyAlgorithm {
 	switch {
-	case oid.Equal(oidPublicKeyRSA):
+	case oid.Equal(oidPublicKeyRSA), oid.Equal(oidPublicKeyRSAOAEP), oid.Equal(oidPublicKeyRSAPSS):
 		return RSA
 	case oid.Equal(oidPublicKeyDSA):
 		return DSA

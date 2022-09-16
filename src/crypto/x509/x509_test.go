@@ -1397,13 +1397,14 @@ func TestCreateCertificateRequest(t *testing.T) {
 		name    string
 		priv    any
 		sigAlgo SignatureAlgorithm
+		pubAlgo PublicKeyAlgorithm
 	}{
-		{"RSA", testPrivateKey, SHA256WithRSA},
-		{"RSA-PSS-SHA256", testPrivateKey, SHA256WithRSAPSS},
-		{"ECDSA-256", ecdsa256Priv, ECDSAWithSHA256},
-		{"ECDSA-384", ecdsa384Priv, ECDSAWithSHA256},
-		{"ECDSA-521", ecdsa521Priv, ECDSAWithSHA256},
-		{"Ed25519", ed25519Priv, PureEd25519},
+		{"RSA", testPrivateKey, SHA256WithRSA, RSA},
+		{"RSA-PSS-SHA256", testPrivateKey, SHA256WithRSAPSS, RSA},
+		{"ECDSA-256", ecdsa256Priv, ECDSAWithSHA256, ECDSA},
+		{"ECDSA-384", ecdsa384Priv, ECDSAWithSHA256, ECDSA},
+		{"ECDSA-521", ecdsa521Priv, ECDSAWithSHA256, ECDSA},
+		{"Ed25519", ed25519Priv, PureEd25519, Ed25519},
 	}
 
 	for _, test := range tests {
@@ -1446,6 +1447,8 @@ func TestCreateCertificateRequest(t *testing.T) {
 			t.Errorf("%s: output email addresses and template email addresses don't match", test.name)
 		} else if len(out.IPAddresses) != len(template.IPAddresses) {
 			t.Errorf("%s: output IP addresses and template IP addresses names don't match", test.name)
+		} else if out.PublicKeyAlgorithm != test.pubAlgo {
+			t.Errorf("%s: CSR PublicKeyAlgorithm doesn't match expectations", test.name)
 		}
 	}
 }
