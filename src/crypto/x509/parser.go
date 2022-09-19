@@ -905,6 +905,7 @@ func parseCertificate(der []byte) (*Certificate, error) {
 	if err != nil {
 		return nil, err
 	}
+	cert.PublicKeyOID = pkAI.Algorithm
 	cert.PublicKeyAlgorithm = getPublicKeyAlgorithmFromOID(pkAI.Algorithm)
 	var spk asn1.BitString
 	if !spki.ReadASN1BitString(&spk) {

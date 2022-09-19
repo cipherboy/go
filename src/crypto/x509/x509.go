@@ -638,6 +638,7 @@ type Certificate struct {
 	Signature          []byte
 	SignatureAlgorithm SignatureAlgorithm
 
+	PublicKeyOID       asn1.ObjectIdentifier
 	PublicKeyAlgorithm PublicKeyAlgorithm
 	PublicKey          any
 
@@ -1725,6 +1726,7 @@ type CertificateRequest struct {
 	Signature          []byte
 	SignatureAlgorithm SignatureAlgorithm
 
+	PublicKeyOID       asn1.ObjectIdentifier
 	PublicKeyAlgorithm PublicKeyAlgorithm
 	PublicKey          any
 
@@ -2067,6 +2069,7 @@ func parseCertificateRequest(in *certificateRequest) (*CertificateRequest, error
 		Signature:          in.SignatureValue.RightAlign(),
 		SignatureAlgorithm: getSignatureAlgorithmFromAI(in.SignatureAlgorithm),
 
+		PublicKeyOID:       in.TBSCSR.PublicKey.Algorithm.Algorithm,
 		PublicKeyAlgorithm: getPublicKeyAlgorithmFromOID(in.TBSCSR.PublicKey.Algorithm.Algorithm),
 
 		Version:    in.TBSCSR.Version,

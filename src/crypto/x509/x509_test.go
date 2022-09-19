@@ -1114,6 +1114,18 @@ func TestRSAPSSSelfSigned(t *testing.T) {
 			t.Errorf("#%d: signature check failed: %s", i, err)
 			continue
 		}
+
+		if pemBlock == rsaPSSWithRSAPSSOIDPEM {
+			if !cert.PublicKeyOID.Equal(oidPublicKeyRSAPSS) {
+				t.Errorf("#%d: expected certificate to have PublicKeyOID %v but instead had %v", i, oidPublicKeyRSAPSS, cert.PublicKeyOID)
+				continue
+			}
+		} else {
+			if !cert.PublicKeyOID.Equal(oidPublicKeyRSA) {
+				t.Errorf("#%d: expected certificate to have PublicKeyOID %v but instead had %v", i, oidPublicKeyRSA, cert.PublicKeyOID)
+				continue
+			}
+		}
 	}
 }
 
@@ -1427,13 +1439,15 @@ func TestCreateCertificateRequest(t *testing.T) {
 		priv    any
 		sigAlgo SignatureAlgorithm
 		pubAlgo PublicKeyAlgorithm
+		oid     asn1.ObjectIdentifier
 	}{
-		{"RSA", testPrivateKey, SHA256WithRSA, RSA},
-		{"RSA-PSS-SHA256", testPrivateKey, SHA256WithRSAPSS, RSA},
-		{"ECDSA-256", ecdsa256Priv, ECDSAWithSHA256, ECDSA},
-		{"ECDSA-384", ecdsa384Priv, ECDSAWithSHA256, ECDSA},
-		{"ECDSA-521", ecdsa521Priv, ECDSAWithSHA256, ECDSA},
-		{"Ed25519", ed25519Priv, PureEd25519, Ed25519},
+		{"RSA", testPrivateKey, SHA256WithRSA, RSA, oidPublicKeyRSA},
+		// Go generates rsaEncryption OID'd CSRs by defeault.
+		{"RSA-PSS-SHA256", testPrivateKey, SHA256WithRSAPSS, RSA, oidPublicKeyRSA},
+		{"ECDSA-256", ecdsa256Priv, ECDSAWithSHA256, ECDSA, oidPublicKeyECDSA},
+		{"ECDSA-384", ecdsa384Priv, ECDSAWithSHA256, ECDSA, oidPublicKeyECDSA},
+		{"ECDSA-521", ecdsa521Priv, ECDSAWithSHA256, ECDSA, oidPublicKeyECDSA},
+		{"Ed25519", ed25519Priv, PureEd25519, Ed25519, oidPublicKeyEd25519},
 	}
 
 	for _, test := range tests {
@@ -1478,6 +1492,8 @@ func TestCreateCertificateRequest(t *testing.T) {
 			t.Errorf("%s: output IP addresses and template IP addresses names don't match", test.name)
 		} else if out.PublicKeyAlgorithm != test.pubAlgo {
 			t.Errorf("%s: CSR PublicKeyAlgorithm doesn't match expectations", test.name)
+		} else if !out.PublicKeyOID.Equal(test.oid) {
+			t.Errorf("%s: CSR PublicKeyOID doesn't match expectations: expected %v but got %v", test.name, test.oid, out.PublicKeyOID)
 		}
 	}
 }
