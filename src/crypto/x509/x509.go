@@ -408,8 +408,11 @@ func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm
 	// PSS is greatly overburdened with options. This code forces them into
 	// three buckets by requiring that the MGF1 hash function always match the
 	// message hash function (as recommended in RFC 3447, Section 8.1), that the
-	// salt length matches the hash length, and that the trailer field has the
-	// default value.
+	// salt length is at least the hash length, and that the trailer field has
+	// the default value.
+	//
+	// Note that OpenSSL by default uses the equivalent of PSSSaltLengthAuto on
+	// certificate generation, that is, uses the maximum possible salt length.
 	if (len(params.Hash.Parameters.FullBytes) != 0 && !bytes.Equal(params.Hash.Parameters.FullBytes, asn1.NullBytes)) ||
 		!params.MGF.Algorithm.Equal(oidMGF1) ||
 		!mgf1HashFunc.Algorithm.Equal(params.Hash.Algorithm) ||
@@ -419,11 +422,11 @@ func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm
 	}
 
 	switch {
-	case params.Hash.Algorithm.Equal(oidSHA256) && params.SaltLength == 32:
+	case params.Hash.Algorithm.Equal(oidSHA256) && params.SaltLength >= 32:
 		return SHA256WithRSAPSS
-	case params.Hash.Algorithm.Equal(oidSHA384) && params.SaltLength == 48:
+	case params.Hash.Algorithm.Equal(oidSHA384) && params.SaltLength >= 48:
 		return SHA384WithRSAPSS
-	case params.Hash.Algorithm.Equal(oidSHA512) && params.SaltLength == 64:
+	case params.Hash.Algorithm.Equal(oidSHA512) && params.SaltLength >= 64:
 		return SHA512WithRSAPSS
 	}
 
@@ -858,7 +861,7 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 			return signaturePublicKeyAlgoMismatchError(pubKeyAlgo, pub)
 		}
 		if algo.isRSAPSS() {
-			return rsa.VerifyPSS(pub, hashType, signed, signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
+			return rsa.VerifyPSS(pub, hashType, signed, signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto})
 		} else {
 			return rsa.VerifyPKCS1v15(pub, hashType, signed, signature)
 		}

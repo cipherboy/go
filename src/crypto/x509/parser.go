@@ -218,7 +218,9 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (any, error
 	case RSA:
 		// RSA public keys must have a NULL in the parameters.
 		// See RFC 3279, Section 2.3.1.
-		if !bytes.Equal(keyData.Algorithm.Parameters.FullBytes, asn1.NullBytes) {
+		isRSAEncOID := keyData.Algorithm.Algorithm.Equal(oidPublicKeyRSA)
+		haveNullParameter := bytes.Equal(keyData.Algorithm.Parameters.FullBytes, asn1.NullBytes)
+		if isRSAEncOID && !haveNullParameter {
 			return nil, errors.New("x509: RSA key missing NULL parameters")
 		}
 
