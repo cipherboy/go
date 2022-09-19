@@ -99,7 +99,7 @@ func typeAndHashFromSignatureScheme(signatureAlgorithm SignatureScheme) (sigType
 	switch signatureAlgorithm {
 	case PKCS1WithSHA1, PKCS1WithSHA256, PKCS1WithSHA384, PKCS1WithSHA512:
 		sigType = signaturePKCS1v15
-	case PSSWithSHA256, PSSWithSHA384, PSSWithSHA512:
+	case PSSWithSHA256, PSSWithSHA384, PSSWithSHA512, PSSKeyWithSHA256, PSSKeyWithSHA384, PSSKeyWithSHA512:
 		sigType = signatureRSAPSS
 	case ECDSAWithSHA1, ECDSAWithP256AndSHA256, ECDSAWithP384AndSHA384, ECDSAWithP521AndSHA512:
 		sigType = signatureECDSA
@@ -111,11 +111,11 @@ func typeAndHashFromSignatureScheme(signatureAlgorithm SignatureScheme) (sigType
 	switch signatureAlgorithm {
 	case PKCS1WithSHA1, ECDSAWithSHA1:
 		hash = crypto.SHA1
-	case PKCS1WithSHA256, PSSWithSHA256, ECDSAWithP256AndSHA256:
+	case PKCS1WithSHA256, PSSWithSHA256, PSSKeyWithSHA256, ECDSAWithP256AndSHA256:
 		hash = crypto.SHA256
-	case PKCS1WithSHA384, PSSWithSHA384, ECDSAWithP384AndSHA384:
+	case PKCS1WithSHA384, PSSWithSHA384, PSSKeyWithSHA384, ECDSAWithP384AndSHA384:
 		hash = crypto.SHA384
-	case PKCS1WithSHA512, PSSWithSHA512, ECDSAWithP521AndSHA512:
+	case PKCS1WithSHA512, PSSWithSHA512, PSSKeyWithSHA512, ECDSAWithP521AndSHA512:
 		hash = crypto.SHA512
 	case Ed25519:
 		hash = directSigning
@@ -155,6 +155,9 @@ var rsaSignatureSchemes = []struct {
 	{PSSWithSHA256, crypto.SHA256.Size()*2 + 2, VersionTLS13},
 	{PSSWithSHA384, crypto.SHA384.Size()*2 + 2, VersionTLS13},
 	{PSSWithSHA512, crypto.SHA512.Size()*2 + 2, VersionTLS13},
+	{PSSKeyWithSHA256, crypto.SHA256.Size()*2 + 2, VersionTLS13},
+	{PSSKeyWithSHA384, crypto.SHA384.Size()*2 + 2, VersionTLS13},
+	{PSSKeyWithSHA512, crypto.SHA512.Size()*2 + 2, VersionTLS13},
 	// PKCS #1 v1.5 uses prefixes from hashPrefixes in crypto/rsa, and requires
 	//    emLen >= len(prefix) + hLen + 11
 	// TLS 1.3 dropped support for PKCS #1 v1.5 in favor of RSA-PSS.

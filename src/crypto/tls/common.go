@@ -177,10 +177,13 @@ var directSigning crypto.Hash = 0
 // Note that in TLS 1.2, the ECDSA algorithms are not constrained to P-256, etc.
 var defaultSupportedSignatureAlgorithms = []SignatureScheme{
 	PSSWithSHA256,
+	PSSKeyWithSHA256,
 	ECDSAWithP256AndSHA256,
 	Ed25519,
 	PSSWithSHA384,
+	PSSKeyWithSHA384,
 	PSSWithSHA512,
+	PSSKeyWithSHA512,
 	PKCS1WithSHA256,
 	PKCS1WithSHA384,
 	PKCS1WithSHA512,
@@ -378,6 +381,11 @@ const (
 	PSSWithSHA256 SignatureScheme = 0x0804
 	PSSWithSHA384 SignatureScheme = 0x0805
 	PSSWithSHA512 SignatureScheme = 0x0806
+
+	// RSASSA-PSS algorithms with public key OID rsaPSS.
+	PSSKeyWithSHA256 SignatureScheme = 0x0809
+	PSSKeyWithSHA384 SignatureScheme = 0x080a
+	PSSKeyWithSHA512 SignatureScheme = 0x080b
 
 	// ECDSA algorithms. Only constrained to a specific curve in TLS 1.3.
 	ECDSAWithP256AndSHA256 SignatureScheme = 0x0403

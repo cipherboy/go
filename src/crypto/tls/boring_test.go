@@ -100,7 +100,10 @@ func isBoringSignatureScheme(alg SignatureScheme) bool {
 		ECDSAWithP521AndSHA512,
 		PSSWithSHA256,
 		PSSWithSHA384,
-		PSSWithSHA512:
+		PSSWithSHA512,
+		PSSKeyWithSHA256,
+		PSSKeyWithSHA384,
+		PSSKeyWithSHA512:
 		// ok
 	}
 	return true

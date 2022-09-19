@@ -2415,8 +2415,11 @@ RwBA9Xk1KBNF
 	if err != nil {
 		return
 	}
-	if _, ok := cert.PublicKey.(*rsa.PublicKey); ok {
-		t.Error("A RSASSA-PSS certificate was parsed like a PKCS#1 v1.5 one, and it will be mistakenly used with rsa_pss_rsae_* signature algorithms")
+	if cert.PublicKey == nil {
+		t.Error("Failed to parse RSASSA-PSS certificate's public key")
+	}
+	if _, ok := cert.PublicKey.(*rsa.PublicKey); !ok {
+		t.Error("Expected RSASSA-PSS certificate to parse like a PKCS#1 v1.5 one")
 	}
 }
 

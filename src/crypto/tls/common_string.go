@@ -14,6 +14,9 @@ func _() {
 	_ = x[PSSWithSHA256-2052]
 	_ = x[PSSWithSHA384-2053]
 	_ = x[PSSWithSHA512-2054]
+	_ = x[PSSKeyWithSHA256-2057]
+	_ = x[PSSKeyWithSHA384-2058]
+	_ = x[PSSKeyWithSHA512-2059]
 	_ = x[ECDSAWithP256AndSHA256-1027]
 	_ = x[ECDSAWithP384AndSHA384-1283]
 	_ = x[ECDSAWithP521AndSHA512-1539]
@@ -32,10 +35,12 @@ const (
 	_SignatureScheme_name_6 = "PKCS1WithSHA512"
 	_SignatureScheme_name_7 = "ECDSAWithP521AndSHA512"
 	_SignatureScheme_name_8 = "PSSWithSHA256PSSWithSHA384PSSWithSHA512Ed25519"
+	_SignatureScheme_name_9 = "PSSKeyWithSHA256PSSKeyWithSHA384PSSKeyWithSHA512"
 )
 
 var (
 	_SignatureScheme_index_8 = [...]uint8{0, 13, 26, 39, 46}
+	_SignatureScheme_index_9 = [...]uint8{0, 16, 32, 48}
 )
 
 func (i SignatureScheme) String() string {
@@ -59,6 +64,9 @@ func (i SignatureScheme) String() string {
 	case 2052 <= i && i <= 2055:
 		i -= 2052
 		return _SignatureScheme_name_8[_SignatureScheme_index_8[i]:_SignatureScheme_index_8[i+1]]
+	case 2057 <= i && i <= 2059:
+		i -= 2057
+		return _SignatureScheme_name_9[_SignatureScheme_index_9[i]:_SignatureScheme_index_9[i+1]]
 	default:
 		return "SignatureScheme(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
