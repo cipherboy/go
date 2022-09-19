@@ -175,9 +175,14 @@ func (test *clientTest) connFromCommand() (conn *recordingConn, child *exec.Cmd,
 	if test.key != nil {
 		key = test.key
 	}
-	derBytes, err := x509.MarshalPKCS8PrivateKey(key)
-	if err != nil {
-		panic(err)
+	var derBytes []byte
+	if _, ok := key.([]byte); !ok {
+		derBytes, err = x509.MarshalPKCS8PrivateKey(key)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		derBytes = key.([]byte)
 	}
 
 	var pemOut bytes.Buffer
@@ -232,7 +237,7 @@ func (test *clientTest) connFromCommand() (conn *recordingConn, child *exec.Cmd,
 	cmd.Stdout = out
 	cmd.Stderr = out
 	if err := cmd.Start(); err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, fmt.Errorf("failed to start (%v): %w", command, err)
 	}
 
 	// OpenSSL does print an "ACCEPT" banner, but it does so *before*
@@ -253,7 +258,7 @@ func (test *clientTest) connFromCommand() (conn *recordingConn, child *exec.Cmd,
 	if err != nil {
 		close(stdin)
 		cmd.Process.Kill()
-		err = fmt.Errorf("error connecting to the OpenSSL server: %v (%v)\n\n%s", err, cmd.Wait(), out)
+		err = fmt.Errorf("error connecting to the OpenSSL server (%v): %v (%v)\n\n%s", command, err, cmd.Wait(), out)
 		return nil, nil, nil, nil, err
 	}
 
@@ -843,6 +848,48 @@ func TestHandshakeClientCertRSAPSS(t *testing.T) {
 	runClientTestTLS12(t, test)
 	runClientTestTLS13(t, test)
 }
+
+// TestHandshakeClientCertRSAPSS tests rsa_pss_pss_sha256 signatures from both
+// client and server certificates. It also serves from both sides a certificate
+// signed itself with RSA-PSS, mostly to check that crypto/x509 chain validation
+// works.
+//
+// This one differs from the above test in that the certificate has OID certificate
+func TestHandshakeClientCertRSAPSSKey(t *testing.T) {
+    cert, err := x509.ParseCertificate(testRSAPSSOIDCertificate)
+    if err != nil {
+        panic(err)
+    }
+    rootCAs := x509.NewCertPool()
+    rootCAs.AddCert(cert)
+
+    config := testConfig.Clone()
+    // Use GetClientCertificate to bypass the client certificate selection logic.
+    config.GetClientCertificate = func(*CertificateRequestInfo) (*Certificate, error) {
+        return &Certificate{
+            Certificate: [][]byte{testRSAPSSOIDCertificate},
+            PrivateKey:  testRSAPrivateKey,
+        }, nil
+    }
+    config.RootCAs = rootCAs
+
+    test := &clientTest{
+        name: "ClientCert-RSA-RSAPSSKey",
+        args: []string{"-cipher", "AES128", "-Verify", "1", "-client_sigalgs",
+            "rsa_pss_pss_sha256", "-sigalgs", "rsa_pss_pss_sha256"},
+        config: config,
+        cert:   testRSAPSSOIDCertificate,
+		// OpenSSL complains if we pass in testRSAPrivateKey, because we
+		// marshal it with MarshalPKCS8PrivateKey, that assigns it the
+		// rsaEnc OID on serialization. Instead, use this alternative
+		// pre-serialized form with the rsaPSS OID, allowing it to match
+		// the above certificate in format.
+        key:    testRSAPrivateKeyPSSPKCS8,
+    }
+    runClientTestTLS12(t, test)
+    runClientTestTLS13(t, test)
+}
+
 
 func TestHandshakeClientCertRSAPKCS1v15(t *testing.T) {
 	config := testConfig.Clone()
