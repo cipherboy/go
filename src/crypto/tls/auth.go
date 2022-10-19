@@ -207,9 +207,39 @@ func signatureSchemesForCertificate(version uint16, cert *Certificate) []Signatu
 		size := pub.Size()
 		sigAlgs = make([]SignatureScheme, 0, len(rsaSignatureSchemes))
 		for _, candidate := range rsaSignatureSchemes {
-			if size >= candidate.minModulusBytes && version <= candidate.maxVersion {
-				sigAlgs = append(sigAlgs, candidate.scheme)
+			// Inverted logic: skip this candidate otherwise.
+			if size < candidate.minModulusBytes || version > candidate.maxVersion {
+				continue
 			}
+
+			// Check if we have a PSS-supporting scheme and handle it
+			// appropriately.
+			sigType, _, err := typeAndHashFromSignatureScheme(candidate.scheme)
+			if err != nil {
+				return nil
+			}
+
+			if sigType == signatureRSAPSS {
+				// There are two variants of PSS signatures: one for rsaEnc
+				// OID certificates and one for rsaPSS OID. We need the parsed
+				// certificate for this.
+				parsed, err := cert.leaf()
+				if err != nil {
+					return nil
+				}
+
+				isPKCS1Cert := parsed.PublicKeyOID.Equal(oidPublicKeyRSA)
+				needsPSSOIDCert := candidate.scheme == PSSKeyWithSHA256 || candidate.scheme == PSSKeyWithSHA384 || candidate.scheme == PSSKeyWithSHA512
+
+				// When these two values are equal (either both true or both
+				// false) it means we have a mismatch in expectations for this
+				// scheme. Skip it.
+				if isPKCS1Cert == needsPSSOIDCert {
+					continue
+				}
+			}
+
+			sigAlgs = append(sigAlgs, candidate.scheme)
 		}
 	case ed25519.PublicKey:
 		sigAlgs = []SignatureScheme{Ed25519}

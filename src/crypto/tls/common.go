@@ -16,6 +16,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
+	"encoding/asn1"
 	"errors"
 	"fmt"
 	"io"
@@ -398,6 +399,10 @@ const (
 	// Legacy signature and hash algorithms for TLS 1.2.
 	PKCS1WithSHA1 SignatureScheme = 0x0201
 	ECDSAWithSHA1 SignatureScheme = 0x0203
+)
+
+var (
+	oidPublicKeyRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
 )
 
 // ClientHelloInfo contains information from a ClientHello message in order to
