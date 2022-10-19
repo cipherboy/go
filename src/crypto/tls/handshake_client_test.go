@@ -194,6 +194,8 @@ func (test *clientTest) connFromCommand() (conn *recordingConn, child *exec.Cmd,
 	var command []string
 	command = append(command, serverCommand...)
 	command = append(command, test.args...)
+	command = append(command, "-security_debug_verbose")
+	command = append(command, "-status_verbose")
 	command = append(command, "-cert", certPath, "-certform", "DER", "-key", keyPath)
 	// serverPort contains the port that OpenSSL will listen on. OpenSSL
 	// can't take "0" as an argument here so we have to pick a number and
@@ -297,9 +299,7 @@ func (test *clientTest) run(t *testing.T, write bool) {
 		}
 		clientConn = recordingConn
 		defer func() {
-			if t.Failed() {
-				t.Logf("OpenSSL output:\n\n%s", stdout.all)
-			}
+			t.Logf("OpenSSL output:\n\n%s", stdout.all)
 		}()
 	} else {
 		clientConn, serverConn = localPipe(t)
