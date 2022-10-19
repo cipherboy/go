@@ -1195,6 +1195,10 @@ func TestClientHelloInfo_SupportsCertificate(t *testing.T) {
 		Certificate: [][]byte{testRSACertificate},
 		PrivateKey:  testRSAPrivateKey,
 	}
+	rsaPSSCert := &Certificate{
+		Certificate: [][]byte{testRSAPSSOIDCertificate},
+		PrivateKey:  testRSAPrivateKey,
+	}
 	pkcs1Cert := &Certificate{
 		Certificate:                  [][]byte{testRSACertificate},
 		PrivateKey:                   testRSAPrivateKey,
@@ -1218,6 +1222,11 @@ func TestClientHelloInfo_SupportsCertificate(t *testing.T) {
 		{rsaCert, &ClientHelloInfo{
 			ServerName:        "example.golang",
 			SignatureSchemes:  []SignatureScheme{PSSWithSHA256},
+			SupportedVersions: []uint16{VersionTLS13},
+		}, ""},
+		{rsaPSSCert, &ClientHelloInfo{
+			ServerName:        "example.golang",
+			SignatureSchemes:  []SignatureScheme{PSSKeyWithSHA256},
 			SupportedVersions: []uint16{VersionTLS13},
 		}, ""},
 		{ecdsaCert, &ClientHelloInfo{
